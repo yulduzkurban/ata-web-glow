@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Download, Award, Calendar } from "lucide-react";
+import { Download, Award, Calendar, Edit, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CertificationsSection = () => {
@@ -84,11 +84,21 @@ const CertificationsSection = () => {
     <section id="certifications" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Certifications & Achievements
-            </span>
-          </h2>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h2 className="text-4xl font-bold">
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                Certifications & Achievements
+              </span>
+            </h2>
+            <Button variant="outline" size="sm" className="opacity-70 hover:opacity-100">
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+            <Button variant="outline" size="sm" className="opacity-70 hover:opacity-100">
+              <Plus className="w-4 h-4 mr-2" />
+              Add
+            </Button>
+          </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Continuous learning and professional development through industry certifications
           </p>
