@@ -9,11 +9,10 @@ import SkillForm from "@/components/forms/SkillForm";
 import TimelineForm from "@/components/forms/TimelineForm";
 import TestimonialForm from "@/components/forms/TestimonialForm";
 import CertificationForm from "@/components/forms/CertificationForm";
-import ProfileForm from "@/components/forms/ProfileForm";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("projects");
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,18 +39,13 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-6">
-                <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="skills">Skills</TabsTrigger>
                 <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
                 <TabsTrigger value="certifications">Certifications</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="profile" className="mt-6">
-                <ProfileForm />
-              </TabsContent>
 
               <TabsContent value="projects" className="mt-6">
                 <ProjectForm />
