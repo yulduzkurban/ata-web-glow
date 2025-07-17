@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ThemeToggle from "./ThemeToggle";
@@ -29,38 +29,53 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/20">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <>
+      {/* Desktop Left Sidebar */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-background/95 backdrop-blur-sm border-r border-border/20 z-50">
+        <div className="flex flex-col w-full p-6">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Yulduzxon Atajonova
+                Portfolio
               </span>
             </h1>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Navigation Links */}
+          <nav className="flex flex-col space-y-4 mb-8">
             {quickLinks.map((link) => (
               <button
                 key={link.name}
                 onClick={() => handleLinkClick(link)}
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-left text-lg text-muted-foreground hover:text-primary transition-colors py-2"
               >
                 {link.name}
               </button>
             ))}
-          </div>
+          </nav>
 
-          {/* Desktop Theme Toggle */}
-          <div className="hidden md:flex items-center">
+          {/* Theme Toggle */}
+          <div className="mt-auto">
             <ThemeToggle />
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Top Bar */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/20">
+        <div className="flex items-center justify-between h-16 px-4">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <h1 className="text-xl font-bold">
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                Portfolio
+              </span>
+            </h1>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -87,8 +102,8 @@ const Navbar = () => {
             </Sheet>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 };
 

@@ -14,7 +14,8 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-16">
+      {/* Main content with responsive margins */}
+      <div className="md:ml-64 pt-16 md:pt-0">
         <HeroSection />
         <ProjectsSection />
         <SkillsSection />
