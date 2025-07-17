@@ -7,24 +7,24 @@ import BlogSection from "@/components/BlogSection";
 import CertificationsSection from "@/components/CertificationsSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import ThemeToggle from "@/components/ThemeToggle";
+import Navbar from "@/components/Navbar";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
+      <Navbar />
       
-      <HeroSection />
-      <ProjectsSection />
-      <SkillsSection />
-      <TimelineSection />
-      <CertificationsSection />
-      <TestimonialsSection />
-      <BlogSection />
-      <ContactSection />
-      <Footer />
+      <div className="pt-16">
+        <HeroSection />
+        <ProjectsSection />
+        <SkillsSection />
+        <TimelineSection />
+        <CertificationsSection />
+        <TestimonialsSection />
+        <BlogSection />
+        <ContactSection />
+        <Footer />
+      </div>
     </div>
   );
 };
