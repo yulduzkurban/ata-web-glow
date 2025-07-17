@@ -93,6 +93,19 @@ const ProjectForm = () => {
     setLoading(true);
 
     try {
+      // Check if user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to save projects",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const techStackArray = formData.techStack.split(",").map(tech => tech.trim()).filter(Boolean);
       
       const projectData = {
@@ -102,7 +115,7 @@ const ProjectForm = () => {
         gitlab_url: formData.gitlabUrl,
         live_url: formData.liveUrl || null,
         tech_stack: techStackArray,
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        user_id: user.id
       };
 
       let error;
@@ -125,7 +138,7 @@ const ProjectForm = () => {
         console.error('Error saving project:', error);
         toast({
           title: "Error",
-          description: "Failed to save project. Please try again.",
+          description: error.message || "Failed to save project. Please try again.",
           variant: "destructive",
         });
         return;
