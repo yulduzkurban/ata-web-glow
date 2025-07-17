@@ -7,22 +7,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Project {
   id: string;
+  user_id: string;
   title: string;
   description: string;
   image?: string;
-  gitlabUrl: string;
-  liveUrl?: string;
-  techStack: string[];
-  createdAt: string;
+  gitlab_url: string;
+  live_url?: string;
+  tech_stack: string[];
+  created_at: string;
+  updated_at: string;
 }
 
 const ProjectForm = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -33,10 +37,38 @@ const ProjectForm = () => {
   });
   const { toast } = useToast();
 
+  // Load projects from Supabase
   useEffect(() => {
-    const savedProjects = JSON.parse(localStorage.getItem("projects") || "[]");
-    setProjects(savedProjects);
+    loadProjects();
   }, []);
+
+  const loadProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading projects:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load projects. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load projects. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -46,7 +78,7 @@ const ProjectForm = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title || !formData.description || !formData.gitlabUrl) {
@@ -58,37 +90,64 @@ const ProjectForm = () => {
       return;
     }
 
-    const techStackArray = formData.techStack.split(",").map(tech => tech.trim()).filter(Boolean);
-    
-    const projectData: Project = {
-      id: editingProject?.id || Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      image: formData.image || undefined,
-      gitlabUrl: formData.gitlabUrl,
-      liveUrl: formData.liveUrl || undefined,
-      techStack: techStackArray,
-      createdAt: editingProject?.createdAt || new Date().toISOString(),
-    };
+    setLoading(true);
 
-    let updatedProjects;
-    if (editingProject) {
-      updatedProjects = projects.map(project => 
-        project.id === editingProject.id ? projectData : project
-      );
-    } else {
-      updatedProjects = [...projects, projectData];
+    try {
+      const techStackArray = formData.techStack.split(",").map(tech => tech.trim()).filter(Boolean);
+      
+      const projectData = {
+        title: formData.title,
+        description: formData.description,
+        image: formData.image || null,
+        gitlab_url: formData.gitlabUrl,
+        live_url: formData.liveUrl || null,
+        tech_stack: techStackArray,
+        user_id: (await supabase.auth.getUser()).data.user?.id
+      };
+
+      let error;
+      if (editingProject) {
+        // Update existing project
+        const { error: updateError } = await supabase
+          .from('projects')
+          .update(projectData)
+          .eq('id', editingProject.id);
+        error = updateError;
+      } else {
+        // Create new project
+        const { error: insertError } = await supabase
+          .from('projects')
+          .insert([projectData]);
+        error = insertError;
+      }
+
+      if (error) {
+        console.error('Error saving project:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save project. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: editingProject ? "Project updated successfully" : "Project added successfully",
+      });
+
+      resetForm();
+      loadProjects(); // Reload projects from database
+    } catch (error) {
+      console.error('Error saving project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save project. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    setProjects(updatedProjects);
-    localStorage.setItem("projects", JSON.stringify(updatedProjects));
-    
-    toast({
-      title: "Success",
-      description: editingProject ? "Project updated successfully" : "Project added successfully",
-    });
-
-    resetForm();
   };
 
   const handleEdit = (project: Project) => {
@@ -97,22 +156,44 @@ const ProjectForm = () => {
       title: project.title,
       description: project.description,
       image: project.image || "",
-      gitlabUrl: project.gitlabUrl,
-      liveUrl: project.liveUrl || "",
-      techStack: project.techStack.join(", "),
+      gitlabUrl: project.gitlab_url,
+      liveUrl: project.live_url || "",
+      techStack: project.tech_stack.join(", "),
     });
     setIsAddingNew(true);
   };
 
-  const handleDelete = (id: string) => {
-    const updatedProjects = projects.filter(project => project.id !== id);
-    setProjects(updatedProjects);
-    localStorage.setItem("projects", JSON.stringify(updatedProjects));
-    
-    toast({
-      title: "Success",
-      description: "Project deleted successfully",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting project:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete project. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      });
+
+      loadProjects(); // Reload projects from database
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const resetForm = () => {
@@ -221,9 +302,13 @@ const ProjectForm = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit" className="bg-gradient-primary hover:opacity-90">
+                <Button 
+                  type="submit" 
+                  className="bg-gradient-primary hover:opacity-90"
+                  disabled={loading}
+                >
                   <Save className="w-4 h-4 mr-2" />
-                  {editingProject ? "Update" : "Add"} Project
+                  {loading ? "Saving..." : editingProject ? "Update" : "Add"} Project
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
                   <X className="w-4 h-4 mr-2" />
@@ -251,7 +336,7 @@ const ProjectForm = () => {
                 {project.description}
               </p>
               <div className="flex flex-wrap gap-1 mb-3">
-                {project.techStack.map((tech) => (
+                {project.tech_stack.map((tech) => (
                   <Badge key={tech} variant="secondary" className="text-xs">
                     {tech}
                   </Badge>
